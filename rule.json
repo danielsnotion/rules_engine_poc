@@ -1,0 +1,28 @@
+{
+  "pipeline": [
+    {
+      "component": "Filter",
+      "params": {"column": "A", "operator": "==", "value": 2}
+    },
+    {
+      "component": "Filter",
+      "params": {"column": "B", "operator": "is not null"}
+    },
+    {
+      "component": "Lookup",
+      "params": {
+        "lookup_data": {"key": [1, 2, 3], "value": ["one", "two", "three"]},
+        "source_key": "A",
+        "target_key": "value",
+        "new_column_name": "Lookup_Result"
+      }
+    },
+    {
+      "component": "Aggregate",
+      "params": {
+        "group_by_columns": ["C"],
+        "aggregate_func": "lambda df: df.sum()"
+      }
+    }
+  ]
+}

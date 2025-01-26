@@ -1,0 +1,18 @@
+
+Create Python components for Fitter, Aggregate, Lookup first, Union, Minus, Intersect, step aggregate on pandas dataframe. Each component should be should be in individual class. Follow some proper design pattern to include a new component without making change in the core code
+
+To implement the given requirements, we'll design each component as a class and follow the Strategy Design Pattern. This pattern allows adding new components easily without modifying the core logic, adhering to the Open/Closed Principle of SOLID principles. Each component will implement a common interface, ensuring consistency and flexibility.
+
+Here’s how the implementation will be structured:
+
+Base Component Interface: Define a Component base class/interface.
+Individual Components: Implement each of the required components (Fitter, Aggregate, Lookup, Union, Minus, Intersect, StepAggregate) as individual classes.
+Orchestrator: Create an orchestrator that interacts with these components, allowing plug-and-play functionality.
+Let’s proceed to create the code:
+
+Data Pipeline Components
+The provided implementation uses a modular design, making it easy to add new components. To add a new component:
+
+Inherit the Component class.
+Implement the execute method with the desired logic.
+Add the new component to the pipeline via pipeline.add_component().
