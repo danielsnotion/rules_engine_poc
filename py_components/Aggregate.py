@@ -20,10 +20,10 @@ class Aggregate(Component):
     - pandas.DataFrame: The aggregated dataframe.
     """
 
-    def __init__(self, agg_func, agg_column, groupby_columns, output_column=None):
+    def __init__(self, agg_func, agg_column, group_columns, output_column=None):
         self.agg_func = agg_func
         self.agg_column = agg_column
-        self.groupby_columns = groupby_columns
+        self.group_columns = group_columns
         self.output_column = output_column
 
     def execute(self, df):
@@ -32,11 +32,11 @@ class Aggregate(Component):
             agg_func = self.agg_func.lower()
 
         # Perform aggregation
-        agg_df = df.groupby(self.groupby_columns).agg({self.agg_column: self.agg_func}).reset_index()
+        agg_df = df.groupby(self.group_columns).agg({self.agg_column: self.agg_func}).reset_index()
 
         # Create output column name if not provided
         if self.output_column is None:
-            output_column = f"{self.agg_func}_{self.agg_column}_{'_'.join(self.groupby_columns)}"
+            output_column = f"{self.agg_func}_{self.agg_column}_{'_'.join(self.group_columns)}"
 
         # Rename the column to match the pattern if necessary
         agg_df.rename(columns={self.agg_column: self.output_column}, inplace=True)

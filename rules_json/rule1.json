@@ -1,0 +1,21 @@
+{
+  "pipeline": [
+    {
+      "component": "Filter",
+      "params": {"column": "A", "operator": "==", "value": 2}
+    },
+    {
+      "component": "Filter",
+      "params": {"column": "B", "operator": "is not null"}
+    },
+    {
+      "component": "Aggregate",
+      "params": {
+        "agg_column": "A",
+        "group_columns": ["C"],
+        "agg_func": "sum",
+        "output_column": "sum_A"
+      }
+    }
+  ]
+}

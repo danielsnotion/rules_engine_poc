@@ -19,10 +19,10 @@ if __name__ == "__main__":
     pipeline = DataPipeline()
 
     # Add components to pipeline
-    #pipeline.add_component(Filter("A", "==", 2))  # Keep rows where column A equals 2
+    pipeline.add_component(Filter("A", "==", 2))  # Keep rows where column A equals 2
     pipeline.add_component(Filter("B", "is not null"))  # Keep rows where column B is not null
-    #pipeline.add_component(Lookup(lookup_df,'A','key','value'))
-    pipeline.add_component(Aggregate('sum','A',['C'],'test')) # Group by column C and sum
+    pipeline.add_component(Lookup(lookup_df,'A','key','value'))
+    #pipeline.add_component(Aggregate('sum','A',['C'],'test')) # Group by column C and sum
 
     # Execute pipeline
     result = pipeline.execute(df)

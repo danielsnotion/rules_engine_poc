@@ -1,7 +1,10 @@
 
-Create Python components for Fitter, Aggregate, Lookup first, Union, Minus, Intersect, step aggregate on pandas dataframe. Each component should be should be in individual class. Follow some proper design pattern to include a new component without making change in the core code
+Create Python components for Fitter, Aggregate, Lookup first, Union, Minus, Intersect, step aggregate on pandas dataframe.
+Each component should be should be in individual class. Follow some proper design pattern to include a new component without making change in the core code
 
-To implement the given requirements, we'll design each component as a class and follow the Strategy Design Pattern. This pattern allows adding new components easily without modifying the core logic, adhering to the Open/Closed Principle of SOLID principles. Each component will implement a common interface, ensuring consistency and flexibility.
+To implement the given requirements, we'll design each component as a class and follow the Strategy Design Pattern.
+This pattern allows adding new components easily without modifying the core logic, adhering to the Open/Closed Principle of SOLID principles.
+Each component will implement a common interface, ensuring consistency and flexibility.
 
 Here’s how the implementation will be structured:
 
