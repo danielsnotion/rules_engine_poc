@@ -6,7 +6,7 @@ from flask import request, jsonify
 from flask_restx import Resource, Namespace
 
 from model.RulesTemplate import RulesTemplate
-from py_components.DataPipeline import DataPipeline
+from util.DataPipeline import DataPipeline
 from util.PipelineCoverter import create_component
 
 rules_api = Namespace('Rules Execution Engine', description='API to execute rules')
@@ -18,6 +18,10 @@ logger = logging.getLogger(__name__)
 
 @rules_api.route('/execute')
 class RulesExecution(Resource):
+    """
+    Execute a rule from a Python file
+    """
+
     @rules_api.expect(rules_template.execute_rule_expected_payload())
     @rules_api.marshal_with(rules_template.execute_rule_response())
     def post(self):

@@ -1,5 +1,5 @@
 # Intersect Component
-from py_components.Component import Component
+from py_components.interface.Component import Component
 
 
 class Intersect(Component):

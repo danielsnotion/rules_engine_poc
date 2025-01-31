@@ -1,6 +1,6 @@
 # Step Aggregate Component
 import pandas as pd
-from py_components.Component import Component
+from py_components.interface.Component import Component
 
 class StepAggregate(Component):
     """

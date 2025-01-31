@@ -1,21 +1,14 @@
-from py_components.Component import Component
+from py_components.interface.Component import Component, df_storage
+import pandas as pd
+
 
 # Union Component
 class Union(Component):
-    """
-    Union Component to combine two pandas DataFrames, removing duplicates.
+    def __init__(self, step_name, component_type, params):
+        super().__init__(step_name, component_type, params)
 
-    Parameters:
-    - other_df (pd.DataFrame): The DataFrame to union with.
-
-    Example:
-    ```python
-    union_component = Union(other_df)
-    unioned_df = union_component.execute(df)
-    ```
-    """
-    def __init__(self, other_df):
-        self.other_df = other_df
-
-    def execute(self, df):
-        return pd.concat([df, self.other_df]).drop_duplicates().reset_index(drop=True)
+    def execute(self):
+        input_df = df_storage.get(self.params['input_df'])
+        union_df = df_storage.get(self.params['union_df'])
+        output_df = pd.concat([input_df, union_df], ignore_index=True)
+        self.save_output(output_df)

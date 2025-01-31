@@ -1,20 +1,34 @@
 {
+  "pipeline_name": "rule_pipeline",
   "pipeline": [
     {
-      "component": "Filter",
-      "params": {"column": "A", "operator": "==", "value": 2}
-    },
-    {
-      "component": "Filter",
-      "params": {"column": "B", "operator": "is not null"}
-    },
-    {
-      "component": "Lookup",
+      "step_name": "filter_step",
+      "component_type": "filter",
       "params": {
-        "lookup_data": {"key": [1, 2, 3], "value": ["one", "two", "three"]},
-        "source_column": "A",
-        "lookup_column": "key",
-        "return_column": "value"
+        "input_df": "input_df",
+        "column": "col1",
+        "operator": "is null",
+        "output_df_name": "filtered_df"
+      }
+    },
+    {
+      "step_name": "aggregate_step",
+      "component_type": "aggregate",
+      "params": {
+        "input_df": "filtered_df",
+        "group_by": "col1",
+        "agg_func": "sum",
+        "output_df_name": "aggregated_df"
+      }
+    },
+    {
+      "step_name": "lookup_step",
+      "component_type": "lookup",
+      "params": {
+        "input_df": "aggregated_df",
+        "lookup_df": "lookup_df",
+        "on": "col2",
+        "output_df_name": "lookup_df"
       }
     }
   ]

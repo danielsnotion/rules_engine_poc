@@ -19,3 +19,4 @@ The provided implementation uses a modular design, making it easy to add new com
 Inherit the Component class.
 Implement the execute method with the desired logic.
 Add the new component to the pipeline via pipeline.add_component().
+

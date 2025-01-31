@@ -1,42 +1,34 @@
-from py_components.Component import Component
+# Filter component
+from py_components.interface.Component import Component, df_storage
 
-# Filter Component
+
 class Filter(Component):
-    """
-    Filter Component to filter rows in a pandas DataFrame based on a column, operator, and value.
+    def __init__(self, step_name, component_type, params):
+        super().__init__(step_name, component_type, params)
 
-    Parameters:
-    - column (str): The column name on which to apply the filter.
-    - operator (str): The operator to use for filtering (e.g., '==', '!=', '<', '<=', '>', '>=', 'is null', 'is not null').
-    - value (any, optional): The value to compare against for filtering. Not needed for 'is null' and 'is not null'.
+    def execute(self):
+        input_df = df_storage.get(self.params['input_df'])
+        column = self.params['column']
+        operator = self.params['operator']
+        value = self.params.get('value', None)
 
-    Example:
-    ```python
-    filter_component = Filter("A", "==", 2)
-    filtered_df = filter_component.execute(df)
-    ```
-    """
-    def __init__(self, column, operator, value=None):
-        self.column = column
-        self.operator = operator
-        self.value = value
-
-    def execute(self, df):
-        if self.operator == "==":
-            return df[df[self.column] == self.value]
-        elif self.operator == "!=":
-            return df[df[self.column] != self.value]
-        elif self.operator == "<":
-            return df[df[self.column] < self.value]
-        elif self.operator == "<=":
-            return df[df[self.column] <= self.value]
-        elif self.operator == ">":
-            return df[df[self.column] > self.value]
-        elif self.operator == ">=":
-            return df[df[self.column] >= self.value]
-        elif self.operator == "is null":
-            return df[df[self.column].isnull()]
-        elif self.operator == "is not null":
-            return df[df[self.column].notnull()]
+        # Handle filtering based on operator
+        if operator == '=':
+            output_df = input_df[input_df[column] == value]
+        elif operator == '!=':
+            output_df = input_df[input_df[column] != value]
+        elif operator == '>':
+            output_df = input_df[input_df[column] > value]
+        elif operator == '<':
+            output_df = input_df[input_df[column] < value]
+        elif operator == '>=':
+            output_df = input_df[input_df[column] >= value]
+        elif operator == '<=':
+            output_df = input_df[input_df[column] <= value]
+        elif operator == 'is null':
+            output_df = input_df[input_df[column].isnull()]
+        elif operator == 'is not null':
+            output_df = input_df[input_df[column].notnull()]
         else:
-            raise ValueError(f"Unsupported operator: {self.operator}")
+            raise ValueError(f"Unsupported operator: {operator}")
+        self.save_output(output_df)
