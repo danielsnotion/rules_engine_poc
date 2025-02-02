@@ -26,7 +26,7 @@ try:
     df_storage['input_df'] = input_df
     df_storage['lookup_df'] = input_df
 
-    with open('C:\\Users\\lenovo\\PycharmProjects\\rules_engine_poc\\rules_json\\rule5.json', 'r') as rule_json:
+    with open('C:\\Users\\lenovo\\PycharmProjects\\rules_engine_poc\\rules_json\\rule3.json', 'r') as rule_json:
         rule = json.load(rule_json)
 
     # Steps in JSON format
