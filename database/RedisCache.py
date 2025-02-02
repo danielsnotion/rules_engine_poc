@@ -6,7 +6,7 @@ import io
 class RedisCache:
     _instance = None  # Singleton instance
 
-    def __new__(cls, host='localhost', port=6379, db=0):
+    def __new__(cls, host='127.0.0.1', port=6379, db=0):
         if cls._instance is None:
             cls._instance = super(RedisCache, cls).__new__(cls)
             cls._instance.redis_client = redis.StrictRedis(host=host, port=port, db=db, decode_responses=False)
@@ -60,7 +60,8 @@ if __name__ == "__main__":
         redis_cache = RedisCache()
 
         # Create a sample DataFrame
-        df = pd.DataFrame({"id": [1, 2, 3], "value": [10.5, 20.3, 30.1]})
+        # df = pd.DataFrame({"id": [1, 2, 3], "value": [10.5, 20.3, 30.1]})
+        df = pd.read_csv('C:\\Users\\lenovo\\PycharmProjects\\rules_engine_poc\\sample_data\\Customer-Churn-Records.csv')
 
         # Save DataFrame
         redis_cache.save_dataframe("sample_df", df)

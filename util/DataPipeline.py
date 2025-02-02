@@ -3,6 +3,7 @@ from py_components.Expression import Expression
 from py_components.Aggregate import Aggregate
 from py_components.Filter import Filter
 from py_components.Lookup import Lookup
+from py_components.Minus import Minus
 from py_components.Union import Union
 from py_components.interface.Component import df_storage
 
@@ -20,7 +21,8 @@ class DataPipeline:
             'aggregate': Aggregate,
             'lookup': Lookup,
             'union': Union,
-            'expression': Expression
+            'expression': Expression,
+            'minus': Minus
         }
 
         components = []

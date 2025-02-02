@@ -1,0 +1,56 @@
+{
+  "pipeline_name": "customer_analysis_pipeline",
+  "pipeline": [
+    {
+      "step_name": "filter_by_gender",
+      "component_type": "filter",
+      "params": {
+        "input_df": "input_df",
+        "condition": "Gender == 'Female'",
+        "output_df_name": "filtered_df"
+      }
+    },
+    {
+      "step_name": "aggregate_customer_data",
+      "component_type": "aggregate",
+      "params": {
+        "input_df": "filtered_df",
+        "group_by": [
+          "Geography",
+          "Card Type"
+        ],
+        "aggregations": {
+          "HasCrCard": {
+            "sum": "Sum_Of_HasCrCard"
+          },
+          "Balance": {
+            "mean": "Avg_Balance"
+          }
+        },
+        "output_df_name": "aggregated_df"
+      }
+    },
+    {
+      "step_name": "calculate_customer_loyalty",
+      "component_type": "expression",
+      "params": {
+        "input_df": "aggregated_df",
+        "expressions": "SELECT (Sum_Of_HasCrCard * 10) + (Avg_Balance / 1000) FROM aggregated_df;",
+        "output_df_name": "loyalty_df"
+      }
+    },
+    {
+      "step_name": "lookup_customer_complaints",
+      "component_type": "lookup",
+      "params": {
+        "input_df": "loyalty_df",
+        "lookup_df": "input_df",
+        "on": "CustomerId",
+        "lookup_columns": [
+          "Complain"
+        ],
+        "output_df_name": "lookup_df"
+      }
+    }
+  ]
+}

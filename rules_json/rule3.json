@@ -1,0 +1,26 @@
+{
+  "pipeline_name": "customer_stats",
+  "pipeline": [
+    {
+      "step_name": "filter_by_gender",
+      "component_type": "filter",
+      "params": {
+        "input_df": "input_df",
+        "condition": "Gender == 'Female'",
+        "output_df_name": "filtered_df"
+      }
+    },
+    {
+      "step_name": "aggregate_step",
+      "component_type": "aggregate",
+      "params": {
+        "input_df": "filtered_df",
+        "group_by": ["Geography","Card Type"],
+        "aggregations": {
+            "HasCrCard": {"sum": "Sum_Of_HasCrCard"}
+        },
+        "output_df_name": "aggregated_df"
+      }
+    }
+  ]
+}
