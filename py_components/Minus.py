@@ -17,6 +17,12 @@ class Minus(Component):
             raise TypeError("All provided inputs must be pandas DataFrames.")
         self.dataframes = [df_storage.get(df) for df in params["input_df"]]
 
+        # Ensure all input DataFrames have the same columns
+        reference_columns = set(self.dataframes[0].columns)
+        for df in self.dataframes[1:]:
+            if set(df.columns) != reference_columns:
+                raise ValueError("All input DataFrames must have the same columns.")
+
     def execute(self):
         try:
             df = self.dataframes[0].copy()

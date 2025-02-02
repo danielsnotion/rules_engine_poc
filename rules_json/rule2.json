@@ -26,7 +26,9 @@
         "step_name": "expression_step",
         "component_type": "expression",
         "params": {
-          "expressions": "select col2 + 10 as col_sum from filtered_df;",
+          "expressions": {
+            "result_df":"select col2 + 10 as col_sum from filtered_df;"
+          },
           "output_df_name": "expression_df"
         }
     }

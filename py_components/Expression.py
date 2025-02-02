@@ -32,22 +32,23 @@ def validate_sql(db_con, queries):
     return True, "All SQL queries are valid"
 
 
-def execute_multiple_sql_on_dataframe(queries):
+def execute_multiple_sql_on_dataframe(queries_dict):
     """
     Execute multiple SQL queries on Pandas DataFrames.
-
-    :param queries: SQL query string with semicolon-separated queries
-    :return: The last resulting DataFrame
+    :param queries_dict: Dictionary where keys are variable names, and values are SQL query strings
+    :return: The final resulting DataFrame
     """
     db_con = duckdb.connect()
-    is_valid, msg = validate_sql(db_con, queries)
-    print(msg)
-    if not is_valid:
-        db_con.close()
-        raise ValueError(f"SQL Validation Failed: {msg}")
 
-    # Split queries by semicolon and remove empty ones
-    sql_statements = [q.strip() for q in queries.split(";") if q.strip()]
+    errors = []
+    for var_name, sql in queries_dict.items():
+        is_valid, msg = validate_sql(db_con, sql)
+        if not is_valid:
+            errors.append(msg)
+
+    if errors:
+        db_con.close()
+        raise ValueError(f"SQL Validation Failed: {errors}")
 
     # Register the original DataFrames
     for name, df in df_storage.items():
@@ -55,37 +56,35 @@ def execute_multiple_sql_on_dataframe(queries):
 
     last_result = None
 
-    for i, sql in enumerate(sql_statements):
-        df_version = i + 1
-        print(f"Executing SQL {df_version}: {sql}")
-
+    # Execute each query in the dictionary
+    for var_name, sql in queries_dict.items():
+        print(f"Executing SQL for variable {var_name}: {sql}")
         try:
             result_df = db_con.execute(sql).fetchdf()  # Fetch result as DataFrame
             print(result_df)
-            db_con.register(f'df_{df_version}', result_df)  # Register the result as a new DataFrame
+            db_con.register(var_name, result_df)  # Register the result as a new DataFrame with the given name
         except Exception as e:
             db_con.close()
-            raise RuntimeError(f"Error executing query {i + 1}: {e}")
+            raise RuntimeError(f"Error executing SQL for {var_name}: {e}")
 
         last_result = result_df  # Update last result
 
     db_con.close()
     return last_result  # Return the final output DataFrame
 
+
 class Expression(Component):
     def __init__(self, step_name, component_type, params):
         super().__init__(step_name, component_type, params)
 
     def execute(self):
-        expressions1 = self.params['expressions']
-        result_df = execute_multiple_sql_on_dataframe(expressions1)
+        expressions_dict = self.params['expressions']  # Dictionary of variable names and SQL queries
+        result_df = execute_multiple_sql_on_dataframe(expressions_dict)
         self.save_output(result_df)
 
 
 # Example Usage
 if __name__ == "__main__":
-    # Note ::
-    # pip install pandas sqlparse duckdb
     # Sample DataFrames
     df1 = {"id": [1, 2, 3, 4], "name": ["Alice", "Bob", "Charlie", "David"], "age": [25, 30, 35, 40]}
     df2 = {"id": [1, 2, 3, 4], "salary": [50000, 60000, 70000, 80000]}
@@ -93,18 +92,17 @@ if __name__ == "__main__":
     df_storage['input_df1'] = pd.DataFrame(df1)
     df_storage['input_df2'] = pd.DataFrame(df2)
 
-    # Sample Expression
-    expressions = """
-    SELECT * FROM input_df1 WHERE age > 30;
-    SELECT input_df1.name, input_df2.salary FROM input_df1 JOIN input_df2 ON input_df1.id = input_df2.id;
-    SELECT name, salary FROM df_2 WHERE salary > 60000;
-    """
+    # Sample Expression Dictionary
+    expressions = {
+        "result_df1": "SELECT * FROM input_df1 WHERE age > 30;",
+        "result_df2": "SELECT input_df1.name, input_df2.salary FROM input_df1 JOIN input_df2 ON input_df1.id = input_df2.id;",
+        "result_df3": "SELECT name, salary FROM result_df2 WHERE salary > 60000;"
+    }
 
     # Create and execute Expression component
-    expression_component = Expression("expr1", "expression",
-                                      {"input_df": ["input_df1", "input_df2"], "expressions": expressions})
+    expression_component = Expression("expr1", "expression", {"expressions": expressions})
     expression_component.execute()
 
-    # Get the output DataFrame
+    # Get the output DataFrame (the last resulting DataFrame)
     output_df = df_storage.get(expression_component.output_df_name)
     print(output_df)

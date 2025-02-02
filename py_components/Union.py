@@ -6,6 +6,15 @@ from py_components.interface.Component import Component, df_storage
 class Union(Component):
     def __init__(self, step_name, component_type, params):
         super().__init__(step_name, component_type, params)
+        if not all(isinstance(df_storage.get(df), pd.DataFrame) for df in params["input_df"]):
+            raise TypeError("All provided inputs must be pandas DataFrames.")
+        self.dataframes = [df_storage.get(df) for df in params["input_df"]]
+
+        # Ensure all input DataFrames have the same columns
+        reference_columns = set(self.dataframes[0].columns)
+        for df in self.dataframes[1:]:
+            if set(df.columns) != reference_columns:
+                raise ValueError("All input DataFrames must have the same columns.")
 
     def execute(self):
         try:

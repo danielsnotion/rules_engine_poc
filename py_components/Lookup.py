@@ -9,7 +9,7 @@ class Lookup(Component):
     def execute(self):
         input_df = df_storage.get(self.params['input_df'])
         lookup_df = df_storage.get(self.params['lookup_df'])
-
+        print(f"lookup_df111: {lookup_df}")
         left_on = self.params.get('left_on')
         right_on = self.params.get('right_on')
         on = self.params.get('on')

@@ -17,16 +17,11 @@ try:
 
     print("DataFrame retrieved from Redis:", input_df)
 
-    lookup_df = pd.DataFrame({
-        'col2': [1, 2, 3],
-        'col3': ['X', 'Y', 'Z']
-    })
-
     # Store input DataFrame in the global dictionary
     df_storage['input_df'] = input_df
     df_storage['lookup_df'] = input_df
 
-    with open('C:\\Users\\lenovo\\PycharmProjects\\rules_engine_poc\\rules_json\\rule3.json', 'r') as rule_json:
+    with open('C:\\Users\\lenovo\\PycharmProjects\\rules_engine_poc\\rules_json\\redis_rule4.json', 'r') as rule_json:
         rule = json.load(rule_json)
 
     # Steps in JSON format

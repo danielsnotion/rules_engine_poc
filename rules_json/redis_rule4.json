@@ -25,6 +25,9 @@
           },
           "Balance": {
             "mean": "Avg_Balance"
+          },
+          "CustomerId": {
+            "first": "First_CustomerId"
           }
         },
         "output_df_name": "aggregated_df"
@@ -35,7 +38,9 @@
       "component_type": "expression",
       "params": {
         "input_df": "aggregated_df",
-        "expressions": "SELECT (Sum_Of_HasCrCard * 10) + (Avg_Balance / 1000) FROM aggregated_df;",
+        "expressions": {
+          "result_df": "SELECT First_CustomerId, (Sum_Of_HasCrCard * 10) + (Avg_Balance / 1000) as customer_loyalty FROM aggregated_df;"
+        },
         "output_df_name": "loyalty_df"
       }
     },
@@ -44,9 +49,11 @@
       "component_type": "lookup",
       "params": {
         "input_df": "loyalty_df",
-        "lookup_df": "input_df",
-        "on": "CustomerId",
-        "lookup_columns": [
+        "lookup_df": "lookup_df",
+        "left_on": "First_CustomerId",
+        "right_on": "CustomerId",
+        "columns": [
+          "Surname",
           "Complain"
         ],
         "output_df_name": "lookup_df"

@@ -2,6 +2,7 @@
 from py_components.Expression import Expression
 from py_components.Aggregate import Aggregate
 from py_components.Filter import Filter
+from py_components.Intersect import Intersect
 from py_components.Lookup import Lookup
 from py_components.Minus import Minus
 from py_components.Union import Union
@@ -22,7 +23,8 @@ class DataPipeline:
             'lookup': Lookup,
             'union': Union,
             'expression': Expression,
-            'minus': Minus
+            'minus': Minus,
+            'intersect': Intersect
         }
 
         components = []
