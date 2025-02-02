@@ -6,7 +6,7 @@
       "component_type": "filter",
       "params": {
         "input_df": "input_df",
-        "condition": "col1 is not null",
+        "condition": "col1 <> 'A'",
         "output_df_name": "filtered_df"
       }
     },
@@ -17,20 +17,18 @@
         "input_df": "filtered_df",
         "group_by": ["col1"],
         "aggregations": {
-            "col2": {"sum": "col2_1"}
+            "col2": {"sum": "total_col1"}
         },
         "output_df_name": "aggregated_df"
       }
     },
     {
-      "step_name": "lookup_step",
-      "component_type": "lookup",
-      "params": {
-        "input_df": "aggregated_df",
-        "lookup_df": "lookup_df",
-        "on": "col2_1",
-        "output_df_name": "lookup_df"
-      }
+        "step_name": "expression_step",
+        "component_type": "expression",
+        "params": {
+          "expressions": "select col2 + 10 as col_sum from filtered_df;",
+          "output_df_name": "expression_df"
+        }
     }
   ]
 }

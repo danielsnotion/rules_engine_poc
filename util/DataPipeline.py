@@ -1,4 +1,5 @@
 # DataPipeline class to process steps from JSON
+from py_components.Expression import Expression
 from py_components.Aggregate import Aggregate
 from py_components.Filter import Filter
 from py_components.Lookup import Lookup
@@ -18,7 +19,8 @@ class DataPipeline:
             'filter': Filter,
             'aggregate': Aggregate,
             'lookup': Lookup,
-            'union': Union
+            'union': Union,
+            'expression': Expression
         }
 
         components = []
@@ -42,6 +44,7 @@ class DataPipeline:
         # Execute each component step by step
         for component in self.components:
             component.execute()
+            df_storage['final_output'] = df_storage.get(component.output_df_name)
             self.debug_print(component)
 
     def debug_print(self, component):
