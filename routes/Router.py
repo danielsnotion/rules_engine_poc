@@ -6,7 +6,7 @@ from flask import request, jsonify
 from flask_restx import Resource, Namespace
 
 from model.RulesTemplate import RulesTemplate
-from util.DataPipeline import DataPipeline
+from utils.DataPipeline import DataPipeline
 from util.PipelineCoverter import create_component
 
 rules_api = Namespace('Rules Execution Engine', description='API to execute rules')

@@ -3,7 +3,7 @@ import json
 
 import pandas as pd
 from py_components.interface.Component import df_storage
-from util.DataPipeline import DataPipeline
+from utils.DataPipeline import DataPipeline
 
 # Assuming input_df and lookup_df are already defined DataFrames
 input_df = pd.DataFrame({

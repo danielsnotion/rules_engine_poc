@@ -1,5 +1,7 @@
 # DataPipeline class to process steps from JSON
-from py_components.Expression import Expression
+from py_components.LarkExpression import LarkExpression
+from py_components.PyExpression import PyExpression
+from py_components.SQLExpression import SQLExpression
 from py_components.Aggregate import Aggregate
 from py_components.Filter import Filter
 from py_components.Intersect import Intersect
@@ -22,7 +24,10 @@ class DataPipeline:
             'aggregate': Aggregate,
             'lookup': Lookup,
             'union': Union,
-            'expression': Expression,
+            'expression': SQLExpression,
+            'sqlexpression': SQLExpression,
+            'pyexpression': PyExpression,
+            'larkexpression': LarkExpression,
             'minus': Minus,
             'intersect': Intersect
         }

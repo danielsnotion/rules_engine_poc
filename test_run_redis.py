@@ -5,7 +5,7 @@ import pandas as pd
 
 from database.RedisCache import RedisCache
 from py_components.interface.Component import df_storage
-from util.DataPipeline import DataPipeline
+from utils.DataPipeline import DataPipeline
 
 try:
     redis_cache = RedisCache()

@@ -13,23 +13,21 @@ def validate_sql(db_con, queries):
     """
     sql_statements = [q.strip() for q in queries.split(";") if q.strip()]
     errors = []
+
     for i, sql in enumerate(sql_statements):
         try:
             parsed = sqlparse.parse(sql)
             if not parsed:
                 errors.append(f"Query {i + 1} is invalid: {sql}")
 
-            # Try to parse the SQL syntax without checking table existence
+            # Try parsing the SQL syntax using DuckDB's EXPLAIN without checking table existence
             db_con.execute(f"EXPLAIN {sql}")
-        except Exception as e:
+        except duckdb.Error as e:
             if "Table with name " in str(e) and "does not exist!" in str(e):
                 continue  # Skip table existence errors
             errors.append(f"Query {i + 1} has an error: {str(e)}\nSQL: {sql}")
 
-    if errors:
-        return False, errors  # Return all errors found
-
-    return True, "All SQL queries are valid"
+    return (False, errors) if errors else (True, "All SQL queries are valid")
 
 
 def execute_multiple_sql_on_dataframe(queries_dict):
@@ -40,37 +38,33 @@ def execute_multiple_sql_on_dataframe(queries_dict):
     """
     db_con = duckdb.connect()
 
-    errors = []
-    for var_name, sql in queries_dict.items():
-        is_valid, msg = validate_sql(db_con, sql)
-        if not is_valid:
-            errors.append(msg)
-
-    if errors:
+    # Validate all queries before execution
+    errors = {var_name: validate_sql(db_con, sql)[1] for var_name, sql in queries_dict.items()}
+    if any(not is_valid for is_valid in errors.values()):
         db_con.close()
-        raise ValueError(f"SQL Validation Failed: {errors}")
+        error_messages = {k: v for k, v in errors.items() if isinstance(v, list)}
+        raise ValueError(f"SQL Validation Failed:\n{error_messages}")
 
-    # Register the original DataFrames
+    # Register original DataFrames in DuckDB
     for name, df in df_storage.items():
         db_con.register(name, df)
 
     last_result = None
 
-    # Execute each query in the dictionary
     for var_name, sql in queries_dict.items():
-        print(f"Executing SQL for variable {var_name}: {sql}")
+        print(f"Executing SQL for variable {var_name}:\n{sql}")
         try:
-            result_df = db_con.execute(sql).fetchdf()  # Fetch result as DataFrame
-            print(result_df)
-            db_con.register(var_name, result_df)  # Register the result as a new DataFrame with the given name
-        except Exception as e:
+            result_df = db_con.execute(sql).fetchdf()  # Convert result to DataFrame
+            print(f"Execution Result for {var_name}:\n{result_df}")
+            db_con.register(var_name, result_df)  # Store results in DuckDB
+        except duckdb.Error as e:
             db_con.close()
             raise RuntimeError(f"Error executing SQL for {var_name}: {e}")
 
-        last_result = result_df  # Update last result
+        last_result = result_df  # Keep track of last executed DataFrame
 
     db_con.close()
-    return last_result  # Return the final output DataFrame
+    return last_result
 
 
 class Expression(Component):
@@ -78,7 +72,10 @@ class Expression(Component):
         super().__init__(step_name, component_type, params)
 
     def execute(self):
-        expressions_dict = self.params['expressions']  # Dictionary of variable names and SQL queries
+        expressions_dict = self.params.get('expressions', {})
+        if not expressions_dict:
+            raise ValueError("No expressions provided to execute.")
+
         result_df = execute_multiple_sql_on_dataframe(expressions_dict)
         self.save_output(result_df)
 
@@ -86,13 +83,18 @@ class Expression(Component):
 # Example Usage
 if __name__ == "__main__":
     # Sample DataFrames
-    df1 = {"id": [1, 2, 3, 4], "name": ["Alice", "Bob", "Charlie", "David"], "age": [25, 30, 35, 40]}
-    df2 = {"id": [1, 2, 3, 4], "salary": [50000, 60000, 70000, 80000]}
+    df_storage['input_df1'] = pd.DataFrame({
+        "id": [1, 2, 3, 4],
+        "name": ["Alice", "Bob", "Charlie", "David"],
+        "age": [25, 30, 35, 40]
+    })
 
-    df_storage['input_df1'] = pd.DataFrame(df1)
-    df_storage['input_df2'] = pd.DataFrame(df2)
+    df_storage['input_df2'] = pd.DataFrame({
+        "id": [1, 2, 3, 4],
+        "salary": [50000, 60000, 70000, 80000]
+    })
 
-    # Sample Expression Dictionary
+    # Sample SQL Queries
     expressions = {
         "result_df1": "SELECT * FROM input_df1 WHERE age > 30;",
         "result_df2": "SELECT input_df1.name, input_df2.salary FROM input_df1 JOIN input_df2 ON input_df1.id = input_df2.id;",
@@ -103,6 +105,6 @@ if __name__ == "__main__":
     expression_component = Expression("expr1", "expression", {"expressions": expressions})
     expression_component.execute()
 
-    # Get the output DataFrame (the last resulting DataFrame)
-    output_df = df_storage.get(expression_component.output_df_name)
+    # Retrieve the final output DataFrame
+    output_df = df_storage.get(expression_component.output_df_name, None)
     print(output_df)
