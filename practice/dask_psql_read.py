@@ -1,34 +1,59 @@
+import dask.bag as db
 import dask.dataframe as dd
-from sqlalchemy import create_engine
+import cx_Oracle
+import pandas as pd
 
-# Replace these with your Oracle database credentials
-USER = 'your_username'
-PASSWORD = 'your_password'
-HOST = 'your_host'  # e.g., 127.0.0.1 or your-db-host.com
-PORT = 1521          # Default Oracle port
-SERVICE_NAME = 'your_service_name'  # e.g., ORCL or your custom service name
+def fetch_data_from_oracle_in_chunks(user, password, host, port, service_name, query, chunk_size=50000):
+    """Fetch data from Oracle in chunks using cx_Oracle."""
+    dsn = cx_Oracle.makedsn(host, port, service_name=service_name)
+    conn = cx_Oracle.connect(user=user, password=password, dsn=dsn)
 
-# Create an SQLAlchemy connection string
-connection_string = f'oracle+cx_oracle://{USER}:{PASSWORD}@{HOST}:{PORT}/?service_name={SERVICE_NAME}'
+    # Use a cursor to execute the query
+    cursor = conn.cursor()
+    cursor.execute(query)
 
-# Create SQLAlchemy engine
-engine = create_engine(connection_string)
+    # Fetch data in chunks
+    while True:
+        chunk = cursor.fetchmany(chunk_size)
+        if not chunk:
+            break
+        # Convert each row in chunk to a dictionary
+        columns = [col[0] for col in cursor.description]
+        for row in chunk:
+            yield dict(zip(columns, row))
 
-# Define your table name and index column
-TABLE_NAME = 'your_table_name'
-INDEX_COLUMN = 'your_primary_key_column'  # Use a column that can be indexed for efficiency
+    # Cleanup
+    cursor.close()
+    conn.close()
 
-# Read data into a Dask DataFrame using SQLAlchemy engine
-dask_df = dd.read_sql_table(
-    TABLE_NAME,
-    con=engine,
-    index_col=INDEX_COLUMN,
-    npartitions=100  # Adjust partitions based on your machine's RAM and CPU cores
-)
+def read_oracle_data_in_parallel(user, password, host, port, service_name, query, partitions=200, chunk_size=50000):
+    """Read Oracle data using Dask in parallel."""
+    # Create a Dask Bag from the data generator
+    data_bag = db.from_sequence(
+        fetch_data_from_oracle_in_chunks(user, password, host, port, service_name, query, chunk_size),
+        npartitions=partitions
+    )
 
-# Optional: Inspect the data
-print(dask_df.head())
+    # Convert Dask Bag to Dask DataFrame
+    df = data_bag.to_dataframe()
 
-# Perform operations on the Dask DataFrame
-result = dask_df.groupby('some_column').sum().compute()  # Example operation
+    # Trigger computation and inspect the first few rows
+    print("Loaded data:")
+    print(df.head())
+
+    return df
+
+# Sample usage
+user = 'your_username'
+password = 'your_password'
+host = 'your_host'
+port = 1521
+service_name = 'your_service_name'
+query = "SELECT * FROM employee_fact WHERE debt='cse'"
+
+# Efficiently read data
+dask_df = read_oracle_data_in_parallel(user, password, host, port, service_name, query)
+
+# Perform some operations (example: group by department and count)
+result = dask_df.groupby('department').size().compute()
 print(result)
