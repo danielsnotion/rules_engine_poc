@@ -6,8 +6,8 @@ from flask import request, jsonify
 from flask_restx import Resource, Namespace
 
 from model.RulesTemplate import RulesTemplate
+from py_components.interface.Component import df_storage
 from utils.DataPipeline import DataPipeline
-from util.PipelineCoverter import create_component
 
 rules_api = Namespace('Rules Execution Engine', description='API to execute rules')
 rules_template = RulesTemplate(rules_api)
@@ -38,24 +38,29 @@ class RulesExecution(Resource):
             try:
                 # Load pipeline configuration from JSON
                 with open(file_path, "r") as file:
-                    config = json.load(file)
-
-                # Initialize pipeline
-                pipeline = DataPipeline()
+                    steps_json = json.load(file)
 
                 # Add components from JSON configuration
+                # Assuming input_df and lookup_df are already defined DataFrames
+                input_df = pd.DataFrame({
+                    'col1': ['A', 'B', 'C', 'A', 'B'],
+                    'col2': [1, 2, 3, 4, 5]
+                })
 
-                for component_config in config["pipeline"]:
-                    component = create_component(component_config["component"], component_config["params"])
+                lookup_df = pd.DataFrame({
+                    'col2_1': [1, 2, 3],
+                    'col3': ['X', 'Y', 'Z']
+                })
 
-                    pipeline.add_component(component)
+                # Store input DataFrame in the global dictionary
+                df_storage['input_df'] = input_df
+                df_storage['lookup_df'] = lookup_df
 
-                # Execute pipeline
-                data = {"A": [1, 2, 3, 4, 5], "B": [5, 4, 3, 2, 1], "C": ["X", "Y", "X", "Y", "X"]}
-                df = pd.DataFrame(data)
-                result = pipeline.execute(df)
+                pipeline = DataPipeline(steps_json, True)
+                pipeline.execute()
+                final_result = pipeline.get_result('final_output')
                 logger.info("Rule executed successfully")
-                return {"message": "Rule executed successfully", "output": str(result)}, 200
+                return {"message": "Rule executed successfully", "output": str(final_result)}, 200
             except Exception as e:
                 logger.error("Execution error: %s", str(e))
                 return {"message": "Execution error", "error": str(e)}, 500
