@@ -1,6 +1,6 @@
-id,name,age,salary,department
+id,name,age,salary,dept
 1,John,28,50000,IT
-2,Alice,31,60000,Finance
+2,Alice,30,60000,IT
 3,Bob,25,55000,IT
-4,Eve,35,72000,HR
-6,Dave,40,80000,Finance
+4,Eve,35,70000,IT
+5,Charlie,32,65000,IT
